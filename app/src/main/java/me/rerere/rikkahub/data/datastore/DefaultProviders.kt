@@ -20,6 +20,12 @@ import kotlin.uuid.Uuid
 
 val DEFAULT_AUTO_MODEL_ID = Uuid.parse("b7055fb4-39f9-4042-a88a-0d80ed76cf08")
 
+// Fixed UUID for the Hermes model. The id must be stable across app
+// launches so that the user's selected model persists in
+// PreferencesStore. Using Uuid.random() here would break selection
+// persistence because each launch would register a different id.
+val DEFAULT_HERMES_MODEL_ID = Uuid.parse("a1b2c3d4-5e6f-4a7b-8c9d-0e1f2a3b4c5d")
+
 // Returns the Hermes provider only if a backend host is configured in
 // local.properties (BuildConfig.BACKEND_HOST is non-empty). When the
 // host is empty the provider is omitted so the app starts up with the
@@ -40,7 +46,7 @@ private val hermesProvider: ProviderSetting? =
             builtIn = true,
             models = listOf(
                 Model(
-                    id = Uuid.random(),
+                    id = DEFAULT_HERMES_MODEL_ID,
                     modelId = "hermes-agent",
                     displayName = "Hermes Agent",
                     inputModalities = listOf(Modality.TEXT),
