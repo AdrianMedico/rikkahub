@@ -18,6 +18,42 @@ Click to join our Discord server 👉 [【RikkaHub】](https://discord.gg/9weBqx
   <img src="docs/img/desktop.png" alt="Models Picker" width="450" />
 </div>
 
+## Fork notes — building with a custom backend
+
+This fork removes Google services (Firebase Analytics, Crashlytics, Remote Config),
+the embedded web UI server, and the dynamic-color module. The build does not require
+a `google-services.json` file.
+
+### Configuring a custom backend provider
+
+This build registers an optional **Hermes** provider that points at your own
+OpenAI-compatible backend. The provider URL is read from `local.properties`
+(this file is gitignored — never commit it):
+
+```properties
+# local.properties (gitignored, per-developer)
+# Set <backend-url> to the full URL: scheme, host, port, and path prefix.
+# Example: http://192.168.1.100:8000/v1
+# Example: https://hermes.example.com/v1
+backend.host=<backend-url>
+```
+
+- If the property is missing or blank, the Hermes provider is silently
+  omitted and the remaining built-in providers work normally.
+- Cached builds may need a clean rebuild after changing this value.
+- The authentication token is configured from the in-app provider settings
+  screen (API Key field), not from `local.properties`.
+
+### Building
+
+```sh
+./gradlew assembleDebug
+```
+
+APK at `app/build/outputs/apk/debug/`.
+
+---
+
 ## 🚀 Download
 
 🔗 [Download from Website](https://rikka-ai.com/download) (Recommended)

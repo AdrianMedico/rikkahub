@@ -23,14 +23,18 @@ val DEFAULT_AUTO_MODEL_ID = Uuid.parse("b7055fb4-39f9-4042-a88a-0d80ed76cf08")
 // Returns the Hermes provider only if a backend host is configured in
 // local.properties (BuildConfig.BACKEND_HOST is non-empty). When the
 // host is empty the provider is omitted so the app starts up with the
-// remaining built-in providers; the developer must set the host in
-// local.properties and rebuild for the Hermes provider to appear.
+// remaining built-in providers.
+//
+// The developer must set a full URL in local.properties, e.g.:
+//   backend.host=http://192.168.1.100:8000/v1
+//   backend.host=https://hermes.example.com/v1
+// This gives control over scheme (HTTP/HTTPS), port, and path.
 private val hermesProvider: ProviderSetting? =
     if (BuildConfig.BACKEND_HOST.isNotBlank()) {
         ProviderSetting.OpenAI(
             id = Uuid.parse("8c2a3e91-1f4d-4b8e-9c5a-7e2d8b4f3a6c"),
             name = "Hermes",
-            baseUrl = "http://${BuildConfig.BACKEND_HOST}:8000/v1",
+            baseUrl = BuildConfig.BACKEND_HOST,
             apiKey = "",
             enabled = true,
             builtIn = true,
