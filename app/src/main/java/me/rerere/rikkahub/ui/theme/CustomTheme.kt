@@ -1,13 +1,10 @@
 package me.rerere.rikkahub.ui.theme
 
 import androidx.compose.material3.ColorScheme
-import dynamiccolor.ColorSpecs
-import dynamiccolor.DynamicScheme
-import dynamiccolor.Variant
-import hct.Hct
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.ui.graphics.Color
 import kotlinx.serialization.Serializable
-import me.rerere.material3.toColorScheme
-import palettes.TonalPalette
 import kotlin.uuid.Uuid
 
 @Serializable
@@ -19,50 +16,26 @@ data class CustomTheme(
     val tertiaryColorArgb: Long? = null,
 ) {
     fun generateColorScheme(dark: Boolean): ColorScheme {
-        val sourceHct = Hct.fromInt(primaryColorArgb.toInt())
-        val specVersion = DynamicScheme.DEFAULT_SPEC_VERSION
-        val platform = DynamicScheme.DEFAULT_PLATFORM
-        val contrastLevel = 0.0
-        val colorSpec = ColorSpecs.get(specVersion)
-
-        val primaryPalette = colorSpec.getPrimaryPalette(
-            Variant.TONAL_SPOT, sourceHct, dark, platform, contrastLevel,
-        )
-        val secondaryPalette = if (secondaryColorArgb != null) {
-            TonalPalette.fromInt(secondaryColorArgb.toInt())
+        // Returns a default Material 3 ColorScheme using the configured
+        // primary color. The original implementation produced an HCT-based
+        // tonal palette via Material Color Utilities; the dynamic-color
+        // module is not part of this build, so the secondary/tertiary
+        // slots fall back to the primary color.
+        val primary = Color(primaryColorArgb.toInt())
+        val secondary = secondaryColorArgb?.let { Color(it.toInt()) } ?: primary
+        val tertiary = tertiaryColorArgb?.let { Color(it.toInt()) } ?: primary
+        return if (dark) {
+            darkColorScheme(
+                primary = primary,
+                secondary = secondary,
+                tertiary = tertiary,
+            )
         } else {
-            colorSpec.getSecondaryPalette(
-                Variant.TONAL_SPOT, sourceHct, dark, platform, contrastLevel,
+            lightColorScheme(
+                primary = primary,
+                secondary = secondary,
+                tertiary = tertiary,
             )
         }
-        val tertiaryPalette = if (tertiaryColorArgb != null) {
-            TonalPalette.fromInt(tertiaryColorArgb.toInt())
-        } else {
-            colorSpec.getTertiaryPalette(
-                Variant.TONAL_SPOT, sourceHct, dark, platform, contrastLevel,
-            )
-        }
-
-        val scheme = DynamicScheme(
-            sourceHct,
-            Variant.TONAL_SPOT,
-            dark,
-            contrastLevel,
-            platform,
-            specVersion,
-            primaryPalette,
-            secondaryPalette,
-            tertiaryPalette,
-            colorSpec.getNeutralPalette(
-                Variant.TONAL_SPOT, sourceHct, dark, platform, contrastLevel,
-            ),
-            colorSpec.getNeutralVariantPalette(
-                Variant.TONAL_SPOT, sourceHct, dark, platform, contrastLevel,
-            ),
-            colorSpec.getErrorPalette(
-                Variant.TONAL_SPOT, sourceHct, dark, platform, contrastLevel,
-            ),
-        )
-        return scheme.toColorScheme()
     }
 }

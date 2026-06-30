@@ -9,8 +9,10 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.google.services)
-    alias(libs.plugins.firebase.crashlytics)
+    // Google services plugins are intentionally not applied. The app
+    // does not require a google-services.json at build time.
+    // alias(libs.plugins.google.services)
+    // alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.baselineprofile)
 }
 
@@ -30,6 +32,17 @@ android {
         ndk {
             abiFilters += listOf("arm64-v8a", "x86_64")
         }
+
+        // Optional override exposed as BuildConfig.BACKEND_HOST. Read
+        // from local.properties (gitignored) so the public repo is
+        // free of any host name. The build is reproducible without
+        // it; an empty string is exposed when the property is unset.
+        val localProps = Properties().apply {
+            val f = rootProject.file("local.properties")
+            if (f.exists()) load(FileInputStream(f))
+        }
+        val backendHost = localProps.getProperty("backend.host", "")
+        buildConfigField("String", "BACKEND_HOST", "\"$backendHost\"")
     }
 
     splits {
@@ -80,11 +93,16 @@ android {
             )
             buildConfigField("String", "VERSION_NAME", "\"${android.defaultConfig.versionName}\"")
             buildConfigField("String", "VERSION_CODE", "\"${android.defaultConfig.versionCode}\"")
+            // Release: HTTPS only. Cleartext traffic is not allowed.
+            manifestPlaceholders["usesCleartextTraffic"] = "false"
         }
         debug {
             applicationIdSuffix = ".debug"
             buildConfigField("String", "VERSION_NAME", "\"${android.defaultConfig.versionName}\"")
             buildConfigField("String", "VERSION_CODE", "\"${android.defaultConfig.versionCode}\"")
+            // Debug: cleartext traffic is allowed so the app can talk
+            // to a local backend over HTTP for development.
+            manifestPlaceholders["usesCleartextTraffic"] = "true"
         }
     }
     compileOptions {
@@ -169,11 +187,12 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.material3.adaptive.navigation3)
 
-    // Firebase
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-    implementation(libs.firebase.crashlytics)
-    implementation(libs.firebase.config)
+    // Google services dependencies are intentionally omitted so this
+    // build does not require a google-services.json.
+    // implementation(platform(libs.firebase.bom))
+    // implementation(libs.firebase.analytics)
+    // implementation(libs.firebase.crashlytics)
+    // implementation(libs.firebase.config)
 
     // DataStore
     implementation(libs.androidx.datastore.preferences)
@@ -289,7 +308,6 @@ dependencies {
     implementation(project(":search"))
     implementation(project(":speech"))
     implementation(project(":common"))
-    implementation(project(":material3"))
     implementation(project(":workspace"))
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
     implementation(kotlin("reflect"))
