@@ -92,6 +92,11 @@
         android:resource="@xml/shortcuts" />
     </activity>
     <activity
+      android:name=".ui.activity.CloudflareLoginActivity"
+      android:exported="false"
+      android:label="@string/title_activity_cloudflare_login"
+      android:theme="@style/Theme.Rikkahub" />
+    <activity
       android:name=".ui.activity.ShortcutHandlerActivity"
       android:exported="true"
       android:theme="@android:style/Theme.Translucent.NoTitleBar">

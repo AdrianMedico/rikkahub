@@ -34,6 +34,7 @@ import me.rerere.rikkahub.data.ai.mcp.McpManager
 import me.rerere.rikkahub.data.sync.webdav.WebDavSync
 import me.rerere.search.SearchService
 import me.rerere.rikkahub.data.sync.S3Sync
+import me.rerere.rikkahub.data.net.AndroidWebViewCookieJarBridge
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -160,6 +161,12 @@ val dataSourceModule = module {
     single<OkHttpClient> {
         val acceptLang = AcceptLanguageBuilder.fromAndroid(get())
             .build()
+        // Share cookies with the system WebView so authentication cookies
+        // set by a login flow (e.g. Cloudflare Access cf_clearance) are
+        // sent on subsequent OkHttp requests to the same domain.
+        // android.webkit.CookieManager is process-wide on Android.
+        val webViewCookieManager = android.webkit.CookieManager.getInstance()
+        webViewCookieManager.setAcceptCookie(true)
         OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)
             .readTimeout(10, TimeUnit.MINUTES)
@@ -167,6 +174,7 @@ val dataSourceModule = module {
             .followSslRedirects(true)
             .followRedirects(true)
             .retryOnConnectionFailure(true)
+            .cookieJar(AndroidWebViewCookieJarBridge(webViewCookieManager))
             .addInterceptor { chain ->
                 val originalRequest = chain.request()
                 val requestBuilder = originalRequest.newBuilder()
