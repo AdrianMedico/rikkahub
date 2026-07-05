@@ -13,11 +13,51 @@ import me.rerere.ai.provider.Modality
 import me.rerere.ai.provider.Model
 import me.rerere.ai.provider.ModelAbility
 import me.rerere.ai.provider.ProviderSetting
+import me.rerere.rikkahub.BuildConfig
 import me.rerere.rikkahub.R
 import me.rerere.rikkahub.ui.components.richtext.MarkdownBlock
 import kotlin.uuid.Uuid
 
 val DEFAULT_AUTO_MODEL_ID = Uuid.parse("b7055fb4-39f9-4042-a88a-0d80ed76cf08")
+
+// Fixed UUID for the Hermes model. The id must be stable across app
+// launches so that the user's selected model persists in
+// PreferencesStore. Using Uuid.random() here would break selection
+// persistence because each launch would register a different id.
+val DEFAULT_HERMES_MODEL_ID = Uuid.parse("a1b2c3d4-5e6f-4a7b-8c9d-0e1f2a3b4c5d")
+
+// Returns the Hermes provider only if a backend host is configured in
+// local.properties (BuildConfig.BACKEND_HOST is non-empty). When the
+// host is empty the provider is omitted so the app starts up with the
+// remaining built-in providers.
+//
+// The developer must set a full URL in local.properties, e.g.:
+//   backend.host=http://192.168.1.100:8000/v1
+//   backend.host=https://hermes.example.com/v1
+// This gives control over scheme (HTTP/HTTPS), port, and path.
+private val hermesProvider: ProviderSetting? =
+    if (BuildConfig.BACKEND_HOST.isNotBlank()) {
+        ProviderSetting.OpenAI(
+            id = Uuid.parse("8c2a3e91-1f4d-4b8e-9c5a-7e2d8b4f3a6c"),
+            name = "Hermes",
+            baseUrl = BuildConfig.BACKEND_HOST,
+            apiKey = "",
+            enabled = true,
+            builtIn = true,
+            models = listOf(
+                Model(
+                    id = DEFAULT_HERMES_MODEL_ID,
+                    modelId = "hermes-agent",
+                    displayName = "Hermes Agent",
+                    inputModalities = listOf(Modality.TEXT),
+                    outputModalities = listOf(Modality.TEXT),
+                    abilities = listOf(ModelAbility.TOOL, ModelAbility.REASONING),
+                )
+            )
+        )
+    } else {
+        null
+    }
 
 val DEFAULT_PROVIDERS = listOf(
     ProviderSetting.OpenAI(
@@ -293,4 +333,4 @@ val DEFAULT_PROVIDERS = listOf(
             )
         }
     ),
-)
+) + listOfNotNull(hermesProvider)

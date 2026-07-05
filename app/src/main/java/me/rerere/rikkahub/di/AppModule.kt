@@ -1,9 +1,5 @@
 package me.rerere.rikkahub.di
 
-import com.google.firebase.Firebase
-import com.google.firebase.analytics.analytics
-import com.google.firebase.crashlytics.crashlytics
-import com.google.firebase.remoteconfig.remoteConfig
 import kotlinx.serialization.json.Json
 import me.rerere.highlight.Highlighter
 import me.rerere.rikkahub.AppScope
@@ -13,6 +9,7 @@ import me.rerere.rikkahub.service.ChatService
 import me.rerere.rikkahub.utils.EmojiData
 import me.rerere.rikkahub.utils.EmojiUtils
 import me.rerere.rikkahub.utils.JsonInstant
+import me.rerere.rikkahub.utils.NoOpAnalytics
 import me.rerere.rikkahub.utils.SoundEffectPlayer
 import me.rerere.rikkahub.utils.UpdateChecker
 import me.rerere.rikkahub.web.WebServerManager
@@ -50,16 +47,11 @@ val appModule = module {
         TTSManager(get())
     }
 
-    single {
-        Firebase.crashlytics
-    }
-
-    single {
-        Firebase.remoteConfig
-    }
-
-    single {
-        Firebase.analytics
+    // Analytics is provided as a no-op stub. The original Firebase
+    // analytics/crashlytics/remote-config bindings are intentionally
+    // omitted so this build is independent of any Google services.
+    single<NoOpAnalytics> {
+        NoOpAnalytics()
     }
 
     single {
@@ -80,7 +72,8 @@ val appModule = module {
             mcpManager = get(),
             filesManager = get(),
             skillManager = get(),
-            workspaceRepository = get()
+            workspaceRepository = get(),
+            folderRepository = get()
         )
     }
 

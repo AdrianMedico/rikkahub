@@ -18,6 +18,42 @@ Click to join our Discord server 👉 [【RikkaHub】](https://discord.gg/9weBqx
   <img src="docs/img/desktop.png" alt="Models Picker" width="450" />
 </div>
 
+## Fork notes — building with a custom backend
+
+This fork removes Google services (Firebase Analytics, Crashlytics, Remote Config),
+the embedded web UI server, and the dynamic-color module. The build does not require
+a `google-services.json` file.
+
+### Configuring a custom backend provider
+
+This build registers an optional **Hermes** provider that points at your own
+OpenAI-compatible backend. The provider URL is read from `local.properties`
+(this file is gitignored — never commit it):
+
+```properties
+# local.properties (gitignored, per-developer)
+# Set <backend-url> to the full URL: scheme, host, port, and path prefix.
+# Example: http://192.168.1.100:8000/v1
+# Example: https://hermes.example.com/v1
+backend.host=<backend-url>
+```
+
+- If the property is missing or blank, the Hermes provider is silently
+  omitted and the remaining built-in providers work normally.
+- Cached builds may need a clean rebuild after changing this value.
+- The authentication token is configured from the in-app provider settings
+  screen (API Key field), not from `local.properties`.
+
+### Building
+
+```sh
+./gradlew assembleDebug
+```
+
+APK at `app/build/outputs/apk/debug/`.
+
+---
+
 ## 🚀 Download
 
 🔗 [Download from Website](https://rikka-ai.com/download) (Recommended)
@@ -29,7 +65,7 @@ Click to join our Discord server 👉 [【RikkaHub】](https://discord.gg/9weBqx
 |                                         Sponsor                                         | Description                                                                                                                                                                                                                                         |
 |:---------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | <img src="docs/sponsors/aihubmix.png" alt="Aihubmix" width="50" /><br /><b>Aihubmix</b> | Thanks to <a href="https://aihubmix.com?aff=pG7r">aihubmix.com</a> for their financial support. We recommend using aihubmix as a one-stop shop for mainstream models worldwide. (OpenAI, Claude, Google Gemini, DeepSeek, Qwen, and hundreds more). |
-| <img src="docs/sponsors/suixiang.jpg" alt="随想AI网关" width="50" /><br /><b>随想AI网关</b> | 感谢随想AI网关对本项目的赞助！随想AI网关 是一家可靠高效的 API 中继服务提供商，提供 Claude、Codex、Gemini 等的中继服务。注重隐私的中转站·无数据倒卖·无模型掺水，隐私，透明，极速售后。新账户注册每日签到就送 0.5 元测试额度，充值额度 1:1，无需订阅，按量付费。多线路冗余、跨区域容灾、自动故障切换，长链路 SSE 不中断。99.9% 可用性，关键调用从不掉队。 |
+| <img src="docs/sponsors/suixiang.jpg" alt="随想AI中转" width="50" /><br /><b>随想AI中转</b> | 感谢随想AI中转对本项目的赞助！随想AI中转 是一家可靠高效的 API 中继服务提供商，提供 Claude、Codex、Gemini 等的中继服务。注重隐私的中转站·无数据倒卖·无模型掺水，隐私，透明，极速售后。新账户注册每日签到就送 0.5 元测试额度，充值额度 1:1，无需订阅，按量付费。多线路冗余、跨区域容灾、自动故障切换，长链路 SSE 不中断。99.9% 可用性，关键调用从不掉队。 |
 
 ## ✨ Features
 

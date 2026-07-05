@@ -229,6 +229,53 @@ private fun ProviderConfigureOpenAI(
         },
     )
 
+    // For backends behind Cloudflare Access (or any flow that sets
+    // cookies via a WebView login), surface a Login button that opens
+    // CloudflareLoginActivity. The activity performs the email+OTP
+    // flow, the cf_clearance cookie is captured by the system
+    // CookieManager, and OkHttp picks it up on subsequent requests.
+    val baseUrl = provider.baseUrl
+    val requiresLogin = baseUrl.toHttpUrlOrNull()
+        ?.host
+        ?.endsWith("amedico.me") == true
+    if (requiresLogin) {
+        val context = LocalContext.current
+        val toasterLocal = LocalToaster.current
+        val loginLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult(),
+        ) { result ->
+            when (result.resultCode) {
+                android.app.Activity.RESULT_OK -> toasterLocal.show(
+                    message = "Login successful. Cookies saved.",
+                    type = ToastType.Success,
+                )
+                android.app.Activity.RESULT_CANCELED -> {
+                    val reason = result.data?.getStringExtra(
+                        "cancel_reason"
+                    ) ?: "unknown"
+                    toasterLocal.show(
+                        message = "Login cancelled ($reason).",
+                        type = ToastType.Warning,
+                    )
+                }
+            }
+        }
+        OutlinedButton(
+            onClick = {
+                val intent = android.content.Intent(
+                    context,
+                    me.rerere.rikkahub.ui.activity.CloudflareLoginActivity::class.java,
+                ).apply {
+                    putExtra("login_url", baseUrl)
+                }
+                loginLauncher.launch(intent)
+            },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Sign in via web (Cloudflare Access)")
+        }
+    }
+
     OutlinedTextField(
         value = provider.baseUrl,
         onValueChange = { onEdit(provider.copy(baseUrl = it.trim())) },
@@ -417,20 +464,20 @@ private fun ProviderConfigureGoogle(
     )
 
     if (!(provider.vertexAI && provider.useServiceAccount)) {
-        var keyVisible by remember { mutableStateOf(false) }
-        OutlinedTextField(
-            value = provider.apiKey,
-            onValueChange = { onEdit(provider.copy(apiKey = it.trim())) },
-            label = { Text(stringResource(R.string.setting_provider_page_api_key)) },
-            modifier = Modifier.fillMaxWidth(),
-            maxLines = 3,
-            visualTransformation = if (keyVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                IconButton(onClick = { keyVisible = !keyVisible }) {
-                    Icon(if (keyVisible) HugeIcons.ViewOff else HugeIcons.View, contentDescription = null)
-                }
-            },
-        )
+    var keyVisible by remember { mutableStateOf(false) }
+    OutlinedTextField(
+        value = provider.apiKey,
+        onValueChange = { onEdit(provider.copy(apiKey = it.trim())) },
+        label = { Text(stringResource(R.string.setting_provider_page_api_key)) },
+        modifier = Modifier.fillMaxWidth(),
+        maxLines = 3,
+        visualTransformation = if (keyVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        trailingIcon = {
+            IconButton(onClick = { keyVisible = !keyVisible }) {
+                Icon(if (keyVisible) HugeIcons.ViewOff else HugeIcons.View, contentDescription = null)
+            }
+        },
+    )
     }
 
     if (!provider.vertexAI) {

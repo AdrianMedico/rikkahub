@@ -53,7 +53,7 @@
     android:label="@string/app_name"
     android:supportsRtl="true"
     android:theme="@style/Theme.Rikkahub"
-    android:usesCleartextTraffic="true"
+    android:usesCleartextTraffic="${usesCleartextTraffic}"
     tools:targetApi="33">
     <activity
       android:name=".ui.activity.SafeModeActivity"
@@ -92,6 +92,11 @@
         android:resource="@xml/shortcuts" />
     </activity>
     <activity
+      android:name=".ui.activity.CloudflareLoginActivity"
+      android:exported="false"
+      android:label="@string/title_activity_cloudflare_login"
+      android:theme="@style/Theme.Rikkahub" />
+    <activity
       android:name=".ui.activity.ShortcutHandlerActivity"
       android:exported="true"
       android:theme="@android:style/Theme.Translucent.NoTitleBar">
@@ -102,6 +107,22 @@
 
         <data
           android:host="shortcut"
+          android:scheme="rikkahub" />
+      </intent-filter>
+    </activity>
+    <activity
+      android:name=".ui.activity.McpOAuthCallbackActivity"
+      android:exported="true"
+      android:launchMode="singleTask"
+      android:theme="@android:style/Theme.Translucent.NoTitleBar">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <data
+          android:host="mcp-oauth-callback"
           android:scheme="rikkahub" />
       </intent-filter>
     </activity>
